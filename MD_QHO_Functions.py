@@ -1,5 +1,4 @@
 import numpy as np
-import scipy as sp
 import matplotlib.pyplot as plt
 import math
 import time
@@ -35,15 +34,9 @@ def ring_springs_force(mass, wp, x):
             f2[j] = - mass * wp**2 * (2 * x[j] - x[j + 1] - x[j - 1])
     return f2
 
-def trying(mass, wp, x):
-    f2 = np.zeros(len(x))
-    for j in range(0, len(x)):
-        f2[j] = - mass * wp**2 * (2 * x[j] - x[j + 1] - x[j - 1])
-
-
 
 def oscillator_potential(mass, w, x):
-    potential = (((mass * w**2) / 2) * x**2).sum()
+    potential = (0.5 * mass * w**2 * x**2).sum()
     return potential
 
 
@@ -79,10 +72,10 @@ def langevin(mass, beta, v, dt):
     return vel
 
 
-def potential_estimator(mass, w, beads, x):
-    estimator = (0.5 * mass * w**2 * x**2).sum()
-    estimator = estimator / beads
-    return estimator
+# def potential_estimator(mass, w, beads, x):
+#     estimator = (0.5 * mass * w**2 * x**2).sum()
+#     estimator = estimator / beads
+#     return estimator
 
 
 def kinetic_estimator(beta, beads, mass, wp, x):
@@ -119,7 +112,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         potential[step] = oscillator_potential(mass, w, x) / beads + springs_potential(mass, wp, x)
         e_tot[step] = kin[step] + potential[step]
         temp_exp[step] = e_tot[step] / (kboltz * beads)  # Divided by beads from the Equipartition Function
-        pot_est[step] = potential_estimator(mass, w, beads, x)
+        pot_est[step] = oscillator_potential(mass, w, x) / beads
         kin_est[step] = kinetic_estimator(beta, beads, mass, wp, x)
         t += dt
         s += 1
@@ -132,7 +125,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         vx = vx + 0.5 * dt * (force / mass)
         vx = langevin(mass, beta, vx, dt)
 
-    return steps, times, kin, e_tot, temp_exp, pot_est, kin_est
+    return steps, times, kin, potential, e_tot, temp_exp, pot_est, kin_est
 
 
 
