@@ -5,15 +5,13 @@ import time
 
 
 def initial_position(mass, w, hbar, beads):
-    mu = 0
-    sigma = math.sqrt(hbar / (mass * w))
+    mu, sigma = 0, math.sqrt(hbar / (mass * w))
     x = np.random.normal(mu, sigma, beads)
     return x
 
 
 def initial_velocity(mass, beta, beads):
-    mu = 0
-    sigma = math.sqrt(1 / (beta * mass))
+    mu, sigma = 0, math.sqrt(1 / (beta * mass))
     vx = np.random.normal(mu, sigma, beads)
     return vx
 
@@ -24,14 +22,15 @@ def oscillator_force(mass, w, beads, x):
 
 
 def ring_springs_force(mass, wp, x):
+    c2 = - mass * wp**2
     f2 = np.zeros(len(x))
     for j in range(len(x)):
         if j == (len(x) - 1):
-            f2[j] = - mass * wp**2 * (2 * x[j] - x[0] - x[j - 1])
+            f2[j] = c2 * (2 * x[j] - x[0] - x[j - 1])
         elif j == 0:
-            f2[j] = - mass * wp**2 * (2 * x[j] - x[j + 1] - x[-1])
+            f2[j] = c2 * (2 * x[j] - x[j + 1] - x[-1])
         else:
-            f2[j] = - mass * wp**2 * (2 * x[j] - x[j + 1] - x[j - 1])
+            f2[j] = c2 * (2 * x[j] - x[j + 1] - x[j - 1])
     return f2
 
 
@@ -66,26 +65,24 @@ def xsi():  # This is the noise term
 
 
 def langevin(mass, beta, v, dt):
+    # is xsi constant for entire time propagation?
     c1 = math.exp(-1 * gamma(dt) * dt / 2)
     c2 = math.sqrt((mass / beta) * (1 - c1**2))
     vel = c1 * v + c2 * xsi()
     return vel
 
 
-# def potential_estimator(mass, w, beads, x):
-#     estimator = (0.5 * mass * w**2 * x**2).sum()
-#     estimator = estimator / beads
-#     return estimator
-
-
 def kinetic_estimator(beta, beads, mass, wp, x):
-    k_estimator = 0
+    # fac = beads / 5
+    k2 = 0
+    c2 = 0.5 * mass * wp**2
     for j in range(len(x)):
         if j == (len(x) - 1):
-            k_estimator += (beads / (2 * beta)) - 0.5 * mass * wp**2 * (x[0]-x[j])**2
+            k2 += c2 * (x[j] - x[0])**2
         else:
-            k_estimator += (beads / (2 * beta)) - 0.5 * mass * wp**2 * (x[j+1]-x[j])**2
-    return k_estimator
+            k2 += c2 * (x[j] - x[j+1])**2
+    k_estimator = (beads / (2 * beta)) - k2
+    return k_estimator  # / fac
 
 
 def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
@@ -126,11 +123,6 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         vx = langevin(mass, beta, vx, dt)
 
     return steps, times, kin, potential, e_tot, temp_exp, pot_est, kin_est
-
-
-
-
-
 
 
 

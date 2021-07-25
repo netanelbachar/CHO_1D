@@ -7,10 +7,10 @@ hbar = 1
 kboltz = 1
 beta = 10
 
-beads = 16
+beads = 8
 
 # Time
-T_max = 5000
+T_max = 2000
 dt = 1 * 10 ** (-2)
 g_steps = int(T_max / dt)
 print("Number of Steps:", g_steps)
@@ -29,23 +29,23 @@ duration = stop - start
 
 print("Time of execution:", duration)
 print("Mean Temperature:", np.mean(temp_exp[100000:]))
-print("Mean Potential_estimator:", np.mean(pot_est[250000:]))
-print("Mean Kinetic_estimator:", np.mean(kin_est[250000:]))
+print("Mean Potential_estimator:", np.mean(pot_est[100000:]))
+print("Mean Kinetic_estimator:", np.mean(kin_est[100000:]))
 
 
-# figpotest = plt.figure()
-# plt.plot(steps, pot_est, '.', label="P_Estimator vs step", color="blue")
-# plt.xlabel("Steps")
-# plt.ylabel("Potential Estimator")
-# plt.legend()
-# plt.show()
+figpotest = plt.figure()
+plt.plot(steps, pot_est, '.', label="P_Estimator vs step", color="blue")
+plt.xlabel("Steps")
+plt.ylabel("Potential Estimator")
+plt.legend()
+plt.show()
 
-# figpotest = plt.figure()
-# plt.plot(steps, kin_est, '.', label="K_Estimator vs step", color="blue")
-# plt.xlabel("Steps")
-# plt.ylabel("Kinetic Estimator")
-# plt.legend()
-# plt.show()
+figpotest = plt.figure()
+plt.plot(steps, kin_est, '.', label="K_Estimator vs step", color="blue")
+plt.xlabel("Steps")
+plt.ylabel("Kinetic Estimator")
+plt.legend()
+plt.show()
 
 # fig2 = plt.figure()
 # plt.plot(times, e_tot, '.', label="Total Energy vs Time" , color="black")
