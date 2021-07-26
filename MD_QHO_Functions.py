@@ -90,7 +90,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     x = initial_position(mass, w, hbar, beads)
     vx = initial_velocity(mass, beta, beads)
     force = oscillator_force(mass, w, beads, x) + ring_springs_force(mass, wp, x)
-
+    
     t = 0
     s = 0
     times = np.zeros(g_steps)
@@ -98,6 +98,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     kin = np.zeros(g_steps)
     potential = np.zeros(g_steps)
     e_tot = np.zeros(g_steps)
+    e_change = np.zeros(g_steps)
     temp_exp = np.zeros(g_steps)
     pot_est = np.zeros(g_steps)
     kin_est = np.zeros(g_steps)
@@ -108,6 +109,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         kin[step] = kinetic_1d(mass, vx)
         potential[step] = oscillator_potential(mass, w, x) / beads + springs_potential(mass, wp, x)
         e_tot[step] = kin[step] + potential[step]
+        e_change[step] = abs(e_tot[step] - e_tot[5]) * 100 / e_tot[0]
         temp_exp[step] = e_tot[step] / (kboltz * beads)  # Divided by beads from the Equipartition Function
         pot_est[step] = oscillator_potential(mass, w, x) / beads
         kin_est[step] = kinetic_estimator(beta, beads, mass, wp, x)
@@ -122,7 +124,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         vx = vx + 0.5 * dt * (force / mass)
         vx = langevin(mass, beta, vx, dt)
 
-    return steps, times, kin, potential, e_tot, temp_exp, pot_est, kin_est
+    return steps, times, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est
 
 
 
