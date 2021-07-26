@@ -102,6 +102,9 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     temp_exp = np.zeros(g_steps)
     pot_est = np.zeros(g_steps)
     kin_est = np.zeros(g_steps)
+    # Histogram
+    pos = np.zeros(g_steps)
+    vel = np.zeros(g_steps)
 
     for step in range(0, g_steps):
         times[step] = t
@@ -115,7 +118,9 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         kin_est[step] = kinetic_estimator(beta, beads, mass, wp, x)
         t += dt
         s += 1
-
+        # Histogram
+        pos[step] = x[0]
+        vel[step] = vx[0]
         # Time propagation
         vx = langevin(mass, beta, vx, dt)
         vx = vx + 0.5 * dt * (force / mass)
@@ -124,7 +129,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         vx = vx + 0.5 * dt * (force / mass)
         vx = langevin(mass, beta, vx, dt)
 
-    return steps, times, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est
+    return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est
 
 
 

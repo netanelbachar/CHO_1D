@@ -21,7 +21,7 @@ np.random.seed(seed)
 
 # Main
 start = time.time()
-steps, times, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est = \
+steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est = \
     langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads)
 stop = time.time()
 duration = stop - start
@@ -32,6 +32,24 @@ print("Mean Temperature:", np.mean(temp_exp[100000:]))
 print("Mean Potential_estimator:", np.mean(pot_est[100000:]))
 print("Mean Kinetic_estimator:", np.mean(kin_est[100000:]))
 
+
+# Histograms
+n, bins, patches = plt.hist(pos, 50, density=True, facecolor='b', alpha=0.75)
+plt.xlabel('Position')
+plt.ylabel('Counts')
+plt.title('Position of Bead')
+plt.grid(True)
+plt.show()
+
+n, bins, patches = plt.hist(vel, 50, density=True, facecolor='b', alpha=0.75)
+plt.xlabel('Position')
+plt.ylabel('Counts')
+plt.title('Position of Bead')
+plt.grid(True)
+plt.show()
+
+
+# Estimators
 
 # figpotest = plt.figure()
 # plt.plot(steps, pot_est, '.', label="P_Estimator vs step", color="blue")
@@ -48,6 +66,9 @@ print("Mean Kinetic_estimator:", np.mean(kin_est[100000:]))
 # plt.show()
 
 
+# Conservation of Energy
+# print("Mean Total Energy:", np.mean(e_tot[100000:]))
+
 # figper = plt.figure()
 # plt.plot(times, e_change, '.', label="Energy % Change" , color="red")
 # plt.xlabel("time")
@@ -55,7 +76,7 @@ print("Mean Kinetic_estimator:", np.mean(kin_est[100000:]))
 # plt.ylim([-0.1, 0.1])
 # plt.legend()
 # plt.show()
-
+#
 # figenergy = plt.figure()
 # plt.plot(times, e_tot, '.', label="Total Energy vs Time" , color="black")
 # plt.plot(times, kin, '.', label="Kinetic vs Time" , color="red")
