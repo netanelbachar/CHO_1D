@@ -17,12 +17,12 @@ def initial_velocity(mass, beta, beads):
 
 
 def oscillator_force(mass, w, beads, x):
-    f1 = - mass * w**2 * x / beads
+    f1 = - mass * w ** 2 * x / beads
     return f1
 
 
 def ring_springs_force(mass, wp, x):
-    c2 = - mass * wp**2
+    c2 = - mass * wp ** 2
     f2 = np.zeros(len(x))
     for j in range(len(x)):
         if j == (len(x) - 1):
@@ -35,7 +35,7 @@ def ring_springs_force(mass, wp, x):
 
 
 def oscillator_potential(mass, w, x):
-    potential = (0.5 * mass * w**2 * x**2).sum()
+    potential = (0.5 * mass * w ** 2 * x ** 2).sum()
     return potential
 
 
@@ -43,14 +43,14 @@ def springs_potential(mass, wp, x):
     potential = 0
     for j in range(len(x)):
         if j == (len(x) - 1):
-            potential += 0.5 * mass * wp**2 * (x[0] - x[j])**2
+            potential += 0.5 * mass * wp ** 2 * (x[0] - x[j]) ** 2
         else:
-            potential += 0.5 * mass * wp**2 * (x[j + 1] - x[j])**2
+            potential += 0.5 * mass * wp ** 2 * (x[j + 1] - x[j]) ** 2
     return potential
 
 
 def kinetic_1d(mass, v):
-    kinetic = (0.5 * mass * v**2).sum()
+    kinetic = (0.5 * mass * v ** 2).sum()
     return kinetic
 
 
@@ -64,25 +64,25 @@ def xsi(beads):  # This is the noise term
     return z
 
 
-def langevin(mass, beta, v, dt,beads):
-    # is xsi constant for entire time propagation?
+def langevin(mass, beta, v, dt, beads):
+    kin1 = kinetic_1d(mass, v)  # Plus for Ethermo
     c1 = math.exp(-1 * gamma(dt) * dt / 2)
-    c2 = math.sqrt((1 / beta / mass) * (1 - c1**2))
+    c2 = math.sqrt((1 / beta / mass) * (1 - c1 ** 2))
     vel = c1 * v + c2 * xsi(beads)
-    return vel
+    kin2 = kinetic_1d(mass, vel)  # Minus for Ethermo
+    return vel, kin1, kin2
 
 
 def kinetic_estimator(beta, beads, mass, wp, x):
-    # fac = beads / 5
     k2 = 0
-    c2 = 0.5 * mass * wp**2
+    c2 = 0.5 * mass * wp ** 2
     for j in range(len(x)):
         if j == (len(x) - 1):
-            k2 += c2 * (x[j] - x[0])**2
+            k2 += c2 * (x[j] - x[0]) ** 2
         else:
-            k2 += c2 * (x[j] - x[j+1])**2
+            k2 += c2 * (x[j] - x[j + 1]) ** 2
     k_estimator = (beads / (2 * beta)) - k2
-    return k_estimator  # / fac
+    return k_estimator
 
 
 def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
@@ -90,7 +90,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     x = initial_position(mass, w, hbar, beads)
     vx = initial_velocity(mass, beta, beads)
     force = oscillator_force(mass, w, beads, x) + ring_springs_force(mass, wp, x)
-    
+
     t = 0
     s = 0
     times = np.zeros(g_steps)
@@ -99,19 +99,24 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     potential = np.zeros(g_steps)
     e_tot = np.zeros(g_steps)
     e_change = np.zeros(g_steps)
+    h_eff = np.zeros(g_steps)
+    h_eff_change = np.zeros(g_steps)
     temp_exp = np.zeros(g_steps)
     pot_est = np.zeros(g_steps)
     kin_est = np.zeros(g_steps)
+
     # Histogram
     pos = np.zeros(g_steps)
     vel = np.zeros(g_steps)
-
+    ethermo = 0.0
     for step in range(0, g_steps):
         times[step] = t
         steps[step] = int(s)
         kin[step] = kinetic_1d(mass, vx)
         potential[step] = oscillator_potential(mass, w, x) / beads + springs_potential(mass, wp, x)
         e_tot[step] = kin[step] + potential[step]
+        h_eff[step] = e_tot[step] + ethermo
+        h_eff_change[step] = abs((h_eff[step] - h_eff[0]) * 100) / h_eff[0]
         e_change[step] = abs(e_tot[step] - e_tot[0]) * 100 / e_tot[0]
         temp_exp[step] = 2.0 * kin[step] / (kboltz * beads)  # Divided by beads from the Equipartition Function
         pot_est[step] = oscillator_potential(mass, w, x) / beads
@@ -121,16 +126,40 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         # Histogram
         pos[step] = x[0]
         vel[step] = vx[0]
-        
+
         # Time propagation
-        vx = langevin(mass, beta, vx, dt, beads)
+        vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
+        ethermo += kin1 - kin2
         vx = vx + 0.5 * dt * (force / mass)
         x = x + vx * dt
         force = oscillator_force(mass, w, beads, x) + ring_springs_force(mass, wp, x)
         vx = vx + 0.5 * dt * (force / mass)
-        vx = langevin(mass, beta, vx, dt, beads)
+        vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
+        ethermo += kin1 - kin2
 
-    return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est
+    return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change
+
+
+def block_averaging(cutoff, num_of_blocks, data):
+    data_cut = data[cutoff:]
+    block_size = int(len(data_cut) / num_of_blocks)
+    averages = np.zeros(num_of_blocks)
+    for i in range(num_of_blocks):
+        averages[i] = (data_cut[i * block_size:(i + 1) * block_size]).mean()
+    stdv = np.std(averages)
+    return averages, stdv
+
+
+def langevin_dynamics_beads(g_steps, cutoff, num_blocks, dt, mass, beta, hbar, kboltz, w, beads_array):
+    mean_e_tot_est = np.zeros(len(beads_array))
+    stdv_array = np.zeros(len(beads_array))
+    for i, bead_num in enumerate(beads_array):
+        steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
+            langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, bead_num)
+        e_tot_est = kin_est + pot_est
+        avg, stdv_array[i] = block_averaging(cutoff, num_blocks, e_tot_est)
+        mean_e_tot_est[i] = np.mean(kin_est[cutoff:]) + np.mean(pot_est[cutoff:])
+    return mean_e_tot_est, stdv_array
 
 
 
