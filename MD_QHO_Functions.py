@@ -59,16 +59,16 @@ def gamma(dt):  # This is the friction term
     return g
 
 
-def xsi():  # This is the noise term
-    z = np.random.normal(0, 1, 1)
+def xsi(beads):  # This is the noise term
+    z = np.random.normal(0, 1, beads)
     return z
 
 
-def langevin(mass, beta, v, dt):
+def langevin(mass, beta, v, dt,beads):
     # is xsi constant for entire time propagation?
     c1 = math.exp(-1 * gamma(dt) * dt / 2)
-    c2 = math.sqrt((mass / beta) * (1 - c1**2))
-    vel = c1 * v + c2 * xsi()
+    c2 = math.sqrt((1 / beta / mass) * (1 - c1**2))
+    vel = c1 * v + c2 * xsi(beads)
     return vel
 
 
@@ -112,8 +112,8 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         kin[step] = kinetic_1d(mass, vx)
         potential[step] = oscillator_potential(mass, w, x) / beads + springs_potential(mass, wp, x)
         e_tot[step] = kin[step] + potential[step]
-        e_change[step] = abs(e_tot[step] - e_tot[5]) * 100 / e_tot[0]
-        temp_exp[step] = e_tot[step] / (kboltz * beads)  # Divided by beads from the Equipartition Function
+        e_change[step] = abs(e_tot[step] - e_tot[0]) * 100 / e_tot[0]
+        temp_exp[step] = 2.0 * kin[step] / (kboltz * beads)  # Divided by beads from the Equipartition Function
         pot_est[step] = oscillator_potential(mass, w, x) / beads
         kin_est[step] = kinetic_estimator(beta, beads, mass, wp, x)
         t += dt
@@ -121,13 +121,14 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         # Histogram
         pos[step] = x[0]
         vel[step] = vx[0]
+        
         # Time propagation
-        vx = langevin(mass, beta, vx, dt)
+        vx = langevin(mass, beta, vx, dt, beads)
         vx = vx + 0.5 * dt * (force / mass)
         x = x + vx * dt
         force = oscillator_force(mass, w, beads, x) + ring_springs_force(mass, wp, x)
         vx = vx + 0.5 * dt * (force / mass)
-        vx = langevin(mass, beta, vx, dt)
+        vx = langevin(mass, beta, vx, dt, beads)
 
     return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est
 
