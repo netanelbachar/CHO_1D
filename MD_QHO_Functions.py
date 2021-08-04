@@ -3,6 +3,27 @@ import matplotlib.pyplot as plt
 import math
 import time
 
+mass, w, hbar, kboltz = 1, 1, 1, 1
+
+beta = 10
+beta_array = np.array([1, 2, 3, 6, 8, 10])
+
+beads = 26
+beads_array = np.array([2, 3, 4, 5, 6, 8, 10, 12])
+
+# Time
+T_max = 3000
+dt = 1 * 10 ** (-2)
+g_steps = int(T_max / dt)
+print("Number of Steps:", g_steps)
+
+# ErrorBars
+cutoff = int(g_steps * 0.4)
+num_blocks = 50
+
+seed = 347885
+np.random.seed(seed)
+
 
 def initial_position(mass, w, hbar, beads):
     mu, sigma = 0, math.sqrt(hbar / (mass * w))
@@ -143,10 +164,13 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
 def block_averaging(cutoff, num_of_blocks, data):
     data_cut = data[cutoff:]
     block_size = int(len(data_cut) / num_of_blocks)
-    averages = np.zeros(num_of_blocks)
+    average_array = np.zeros(num_of_blocks)
     for i in range(num_of_blocks):
-        averages[i] = (data_cut[i * block_size:(i + 1) * block_size]).mean()
-    stdv = np.std(averages)
+        average_array[i] = (data_cut[i * block_size : (i + 1) * block_size]).mean()
+    averages = average_array.mean()
+    stdv = np.std(average_array, ddof=1) / np.sqrt(num_of_blocks)
+
+
     return averages, stdv
 
 
@@ -159,6 +183,7 @@ def langevin_dynamics_beads(g_steps, cutoff, num_blocks, dt, mass, beta, hbar, k
         e_tot_est = kin_est + pot_est
         avg, stdv_array[i] = block_averaging(cutoff, num_blocks, e_tot_est)
         mean_e_tot_est[i] = np.mean(kin_est[cutoff:]) + np.mean(pot_est[cutoff:])
+        print("Bead number:", bead_num)
     return mean_e_tot_est, stdv_array
 
 
