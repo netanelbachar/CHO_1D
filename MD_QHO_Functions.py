@@ -8,11 +8,11 @@ mass, w, hbar, kboltz = 1, 1, 1, 1
 beta = 10
 beta_array = np.array([1, 2, 3, 6, 8, 10])
 
-beads = 26
+beads = 32
 beads_array = np.array([2, 3, 4, 5, 6, 8, 10, 12])
 
 # Time
-T_max = 3000
+T_max = 2000
 dt = 1 * 10 ** (-2)
 g_steps = int(T_max / dt)
 print("Number of Steps:", g_steps)
@@ -161,17 +161,17 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change
 
 
-def block_averaging(cutoff, num_of_blocks, data):
-    data_cut = data[cutoff:]
-    block_size = int(len(data_cut) / num_of_blocks)
-    average_array = np.zeros(num_of_blocks)
-    for i in range(num_of_blocks):
+def block_averaging(cutoff_, block_size, data):
+    data_cut = data[cutoff_:]
+    data_len = len(data_cut)
+    number_of_blocks = int(data_len/block_size)
+    average_array = np.zeros(number_of_blocks)
+    for i in range(number_of_blocks):
         average_array[i] = (data_cut[i * block_size : (i + 1) * block_size]).mean()
     averages = average_array.mean()
-    stdv = np.std(average_array, ddof=1) / np.sqrt(num_of_blocks)
+    stdv = np.std(average_array, ddof=1) / np.sqrt(number_of_blocks)
 
-
-    return averages, stdv
+    return number_of_blocks, averages, stdv
 
 
 def langevin_dynamics_beads(g_steps, cutoff, num_blocks, dt, mass, beta, hbar, kboltz, w, beads_array):
