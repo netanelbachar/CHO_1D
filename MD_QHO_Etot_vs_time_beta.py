@@ -4,17 +4,17 @@ from MD_QHO_Functions import *
 
 # Different Temperatures - <Etot_est> vs time
 
-# What is left: Add STDV to the Graph
 
-# bead_array_n = np.array([6, 8, 10, 14, 14, 20])
-bead_array_n = np.array([5, 10, 10, 16, 20, 25])
+bead_array_n = np.array([20, 12, 10, 16, 24, 34])
 
+#beta = 8 beads 20
+#beta = 6 beads 16
+#beta = 3 beads 10
+#beta = 2 beads 12
+#beta = 1 beads 10
 start = time.time()
 
-e_kin_est_array = np.zeros(len(bead_array_n))
-e_pot_est_array = np.zeros(len(bead_array_n))
-e_kin_est_stdv = np.zeros(len(bead_array_n))
-e_pot_est_stdv = np.zeros(len(bead_array_n))
+
 
 e_tot_est_array = np.zeros(len(bead_array_n))
 e_tot_est_stdv = np.zeros(len(bead_array_n))
@@ -23,14 +23,14 @@ for i in range(0, len(bead_array_n)):
     print(beta_array[i])
     steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
         langevin_dynamics(g_steps, dt, mass, beta_array[i], hbar, kboltz, w, bead_array_n[i])
-    e_kin_est_array[i], e_kin_est_stdv[i] = block_averaging(cutoff, num_blocks, data=kin_est)
-    e_pot_est_array[i], e_pot_est_stdv[i] = block_averaging(cutoff, num_blocks, data=pot_est)
-    e_tot_est_array[i], e_tot_est_stdv[i] = e_kin_est_array[i] + e_pot_est_array[i], e_kin_est_stdv[i] + e_pot_est_stdv[i]
-
+    number_of_blocks, e_tot_est_array[i], e_tot_est_stdv[i] = \
+        block_averaging(cutoff, block_size=block_size, data=(kin_est + pot_est))
 
 stop = time.time()
-print("Mean Tot Est:", e_tot_est_array, "+-", e_tot_est_stdv)
 duration = stop - start
+
+print("Mean Tot Est:", e_tot_est_array, "+-", e_tot_est_stdv)
+np.savez("QHO_etot_beta_300K_2", mean_e_tot_est=e_tot_est_array, stdv=e_tot_est_stdv, beads=bead_array_n)
 print("Duration time:", duration)
 
 figetotest = plt.figure()

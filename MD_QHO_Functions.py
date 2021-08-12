@@ -4,13 +4,14 @@ import math
 import time
 
 mass, w, hbar, kboltz = 1, 1, 1, 1
-
-beta = 10
-beta_array = np.array([1, 2, 3, 6, 8, 10])
-
-beads = 32
-beads_array = np.array([2, 3, 4, 5, 6, 8, 10, 12])
-
+beta = 8
+# beta_array = np.array([1, 2, 3, 6, 8, 10])
+beads = 8
+beads_array = np.array([26, 28, 30, 32, 34, 36, 38, 40])
+# This evsbeta works
+# beads_array = np.array([20, 12, 10, 16, 20, 32])
+# Primitive and Virial
+# beads_array_p = np.array([10, 20, 30, 40])
 # Time
 T_max = 2000
 dt = 1 * 10 ** (-2)
@@ -19,7 +20,9 @@ print("Number of Steps:", g_steps)
 
 # ErrorBars
 cutoff = int(g_steps * 0.4)
-num_blocks = 50
+num_blocks = 40
+block_size = int((g_steps-cutoff)/num_blocks)
+
 
 seed = 347885
 np.random.seed(seed)
@@ -106,12 +109,17 @@ def kinetic_estimator(beta, beads, mass, wp, x):
     return k_estimator
 
 
+def kinetic_estimator_virial(beads, mass, w, x):
+    c2 = 1 / (2*beads)
+    k_estimator = (c2 * mass * w**2 * x**2).sum()
+    return k_estimator
+
+
 def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     wp = math.sqrt(beads) / (beta * hbar)
     x = initial_position(mass, w, hbar, beads)
     vx = initial_velocity(mass, beta, beads)
     force = oscillator_force(mass, w, beads, x) + ring_springs_force(mass, wp, x)
-
     t = 0
     s = 0
     times = np.zeros(g_steps)
@@ -141,7 +149,8 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         e_change[step] = abs(e_tot[step] - e_tot[0]) * 100 / e_tot[0]
         temp_exp[step] = 2.0 * kin[step] / (kboltz * beads)  # Divided by beads from the Equipartition Function
         pot_est[step] = oscillator_potential(mass, w, x) / beads
-        kin_est[step] = kinetic_estimator(beta, beads, mass, wp, x)
+        # kin_est[step] = kinetic_estimator(beta, beads, mass, wp, x)
+        kin_est[step] = kinetic_estimator_virial(beads, mass, w, x)
         t += dt
         s += 1
         # Histogram
@@ -161,30 +170,28 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change
 
 
-def block_averaging(cutoff_, block_size, data):
-    data_cut = data[cutoff_:]
+def block_averaging(cutoff, block_size, data):
+    data_cut = data[cutoff:]
     data_len = len(data_cut)
     number_of_blocks = int(data_len/block_size)
     average_array = np.zeros(number_of_blocks)
     for i in range(number_of_blocks):
-        average_array[i] = (data_cut[i * block_size : (i + 1) * block_size]).mean()
+        average_array[i] = (data_cut[i * block_size:(i + 1) * block_size]).mean()
     averages = average_array.mean()
     stdv = np.std(average_array, ddof=1) / np.sqrt(number_of_blocks)
 
     return number_of_blocks, averages, stdv
 
 
-def langevin_dynamics_beads(g_steps, cutoff, num_blocks, dt, mass, beta, hbar, kboltz, w, beads_array):
-    mean_e_tot_est = np.zeros(len(beads_array))
-    stdv_array = np.zeros(len(beads_array))
-    for i, bead_num in enumerate(beads_array):
-        steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
-            langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, bead_num)
-        e_tot_est = kin_est + pot_est
-        avg, stdv_array[i] = block_averaging(cutoff, num_blocks, e_tot_est)
-        mean_e_tot_est[i] = np.mean(kin_est[cutoff:]) + np.mean(pot_est[cutoff:])
-        print("Bead number:", bead_num)
-    return mean_e_tot_est, stdv_array
+# def langevin_dynamics_beads(g_steps, cutoff, block_size, dt, mass, beta, hbar, kboltz, w, beads_array):
+#     mean_e_tot_est = np.zeros(len(beads_array))
+#     stdv_array = np.zeros(len(beads_array))
+#     for i, bead_num in enumerate(beads_array):
+#         print("Bead number:", bead_num)
+#         steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
+#             langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, bead_num)
+#         number_of_blocks, mean_e_tot_est[i], stdv_array[i] = block_averaging(cutoff, block_size, (kin_est + pot_est))
+#     return mean_e_tot_est, stdv_array
 
 
 
