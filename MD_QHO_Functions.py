@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import time
-
+# Work?
 mass, w, hbar, kboltz = 1, 1, 1, 1
 beta = 8
 # beta_array = np.array([1, 2, 3, 6, 8, 10])
