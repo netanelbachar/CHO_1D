@@ -4,7 +4,7 @@ import math
 import time
 # Work?
 mass, w, hbar, kboltz = 1, 1, 1, 1
-beta = 8
+beta = 10
 # beta_array = np.array([1, 2, 3, 6, 8, 10])
 beads = 8
 beads_array = np.array([26, 28, 30, 32, 34, 36, 38, 40])
@@ -135,7 +135,9 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
     kin_est = np.zeros(g_steps)
 
     # Histogram
-    pos = np.zeros(g_steps)
+    pos, pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8 = np.zeros(g_steps), np.zeros(g_steps), np.zeros(g_steps), \
+                                                           np.zeros(g_steps), np.zeros(g_steps), np.zeros(g_steps), \
+                                                           np.zeros(g_steps), np.zeros(g_steps), np.zeros(g_steps)
     vel = np.zeros(g_steps)
     ethermo = 0.0
     for step in range(0, g_steps):
@@ -154,6 +156,8 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         t += dt
         s += 1
         # Histogram
+        #Only for 8 Beads
+        # pos1[step], pos2[step], pos3[step], pos4[step], pos5[step], pos6[step], pos7[step], pos8[step] = x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]
         pos[step] = x[0]
         vel[step] = vx[0]
 
@@ -166,7 +170,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         vx = vx + 0.5 * dt * (force / mass)
         vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
         ethermo += kin1 - kin2
-
+    # pos = (pos1 + pos2 + pos3 + pos4 + pos5 + pos6 + pos7 + pos8) / 8
     return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change
 
 
@@ -181,17 +185,6 @@ def block_averaging(cutoff, block_size, data):
     stdv = np.std(average_array, ddof=1) / np.sqrt(number_of_blocks)
 
     return number_of_blocks, averages, stdv
-
-
-# def langevin_dynamics_beads(g_steps, cutoff, block_size, dt, mass, beta, hbar, kboltz, w, beads_array):
-#     mean_e_tot_est = np.zeros(len(beads_array))
-#     stdv_array = np.zeros(len(beads_array))
-#     for i, bead_num in enumerate(beads_array):
-#         print("Bead number:", bead_num)
-#         steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
-#             langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, bead_num)
-#         number_of_blocks, mean_e_tot_est[i], stdv_array[i] = block_averaging(cutoff, block_size, (kin_est + pot_est))
-#     return mean_e_tot_est, stdv_array
 
 
 

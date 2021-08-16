@@ -27,17 +27,19 @@ print("BA_Mean Total Energy Estimator:", avg, "+-", stdv)
 # plt.xlabel('Position')
 # plt.ylabel('Counts')
 # plt.title('Position of Bead')
+# plt.xlim([-1, 1])
 # plt.grid(True)
 # plt.show()
-#
-# plt.figure(2)
-# plt.rcParams.update({'font.size': 13})
-# n, bins, patches = plt.hist(vel, 50, density=True, facecolor='b', alpha=0.75)
-# plt.xlabel('Velocity')
-# plt.ylabel('Counts')
-# plt.title('Velocity of Bead')
-# plt.grid(True)
-# plt.show()
+
+plt.figure(2)
+plt.rcParams.update({'font.size': 13})
+n, bins, patches = plt.hist(vel, 50, density=True, facecolor='b', alpha=0.75)
+plt.xlabel('Velocity')
+plt.ylabel('Counts')
+plt.title('Velocity of Bead')
+plt.xlim([-1.2, 1.2])
+plt.grid(True)
+plt.show()
 #
 # # Conservation of Energy and Temperature
 #
@@ -100,6 +102,6 @@ plt.show()
 # plt.legend()
 # plt.show()
 
-np.savez("QHO_first_4beta", avg=avg, stdv=stdv, time=times, pos=pos, vel=vel, kin=kin, potential= potential, e_tot=e_tot,
+np.savez("QHO_beta10", avg=avg, stdv=stdv, time=times, pos=pos, vel=vel, kin=kin, potential= potential, e_tot=e_tot,
          e_change=e_change, temp_exp=temp_exp, pot_est=pot_est, kin_est=kin_est, h_eff_change=h_eff_change)
 
