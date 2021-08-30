@@ -6,7 +6,7 @@ import time
 mass, w, hbar, kboltz = 1, 1, 1, 1
 beta = 10
 # beta_array = np.array([1, 2, 3, 6, 8, 10])
-beads = 8
+beads = 25
 beads_array = np.array([26, 28, 30, 32, 34, 36, 38, 40])
 # This evsbeta works
 # beads_array = np.array([20, 12, 10, 16, 20, 32])
