@@ -4,13 +4,13 @@ import math
 import time
 
 mass, w, hbar, kboltz = 1, 1, 1, 1
-beta = 10
+beta = 0.5
 
 N_particles = 2
-beads = 1
+# beads = 20
 
 # Time
-T_max = 2000
+T_max = 20000
 dt = 1 * 10 ** (-2)
 g_steps = int(T_max / dt)
 print("Number of Steps:", g_steps)
@@ -23,7 +23,7 @@ block_size = int((g_steps-cutoff)/num_blocks)
 
 seed = 347885
 np.random.seed(seed)
-wp = math.sqrt(beads) / (beta * hbar)
+# wp = math.sqrt(beads) / (beta * hbar)
 
 
 def block_averaging(cutoff, block_size, data):
@@ -52,7 +52,7 @@ def initial_velocity(mass, beta, N_particles, beads):
 
 
 def oscillator_potential(mass, w, x):
-    potential = (0.5 * mass * w ** 2 * x ** 2).sum()
+    potential = (0.5 * mass * w**2 * x**2).sum()
     return potential
 
 
@@ -108,47 +108,54 @@ def langevin(mass, beta, v, dt, beads, N_particles):
     return vel, kin1, kin2
 
 
-def kinetic_estimator(beta, beads, N_particles, mass, wp, x):
-    k2 = 0
-    c2 = 0.5 * mass * wp ** 2
-    for j in range(len(x)):
-        if j == (len(x) - 1):
-            k2 += c2 * (x[j] - x[0]) ** 2
-        else:
-            k2 += c2 * (x[j] - x[j + 1]) ** 2
-    k_estimator = (beads * N_particles / (2 * beta)) - k2
+# def kinetic_estimator_primitive(beads, beta, v_oo, v_o):
+#     exp_v_oo = np.exp(- beta * v_oo)
+#     exp_v_o = np.exp(- beta * v_o)
+#     k_estimator = (beads / beta) - ((exp_v_oo * v_oo + exp_v_o * v_o) / (exp_v_oo + exp_v_o))
+#     return k_estimator
+
+
+def kinetic_estimator_virial2(beads, mass, w, x):
+    k_estimator = - (1 / (2 * beads)) * (x * (- mass * w**2 * x)).sum()
     return k_estimator
 
 
-def kinetic_estimator_virial(beads, N_particles, mass, w, x):
-    c2 = 1 / (2*beads * N_particles)
-    k_estimator = (c2 * mass * w**2 * x**2).sum()
-    return k_estimator
+# def force_cumulative(mass, wp, beta, beads, N_particles, x_long):
+#     x = np.array(np.split(x_long, N_particles))
+#     # Potential
+#     v_o = springs_potential(mass, wp, x_long)  # One long ring
+#     v_oo = springs_potential(mass, wp, x[0]) + springs_potential(mass, wp, x[1])  # Two rings
+#     exp_v_o = np.exp(- beta * v_o)
+#     exp_v_oo = np.exp(- beta * v_oo)
+#     z_exp = exp_v_oo + exp_v_o
+#     # Forces
+#     f_oo_1 = (ring_springs_force(mass, wp, x[0])) * exp_v_oo
+#     f_oo_2 = (ring_springs_force(mass, wp, x[1])) * exp_v_oo
+#     f_o = (ring_springs_force(mass, wp, x_long)) * exp_v_o
+#     # Comulative Avg Force
+#     f1 = (f_o[:beads] + f_oo_1)
+#     f2 = (f_o[beads:] + f_oo_2)
+#     f = np.concatenate((f1, f2)) / z_exp
+#     return f, z_exp, v_o, v_oo
 
 
-def kinetic_estimator_virial2(beads, x, f_ext):
-    k_estimator = ((1 / (2*beads)) * (x[:beads] * f_ext[:beads] + x[beads:] * f_ext[beads:])).sum()
-    return k_estimator
-
-
-def force_comulative(mass, wp, beta, beads, N_particles, x_long):
+def force_cumulative(mass, wp, beta, beads, N_particles, x_long):
     x = np.array(np.split(x_long, N_particles))
     # Potential
     v_o = springs_potential(mass, wp, x_long)  # One long ring
     v_oo = springs_potential(mass, wp, x[0]) + springs_potential(mass, wp, x[1])  # Two rings
-    exp_v_o = np.exp(- beta * v_o)
-    exp_v_oo = np.exp(- beta * v_oo)
+    exp_v_o = np.exp(- beta * (v_o - v_oo))
+    exp_v_oo = np.exp(- beta * (v_oo - v_oo))
     z_exp = exp_v_oo + exp_v_o
     # Forces
     f_oo_1 = (ring_springs_force(mass, wp, x[0])) * exp_v_oo
     f_oo_2 = (ring_springs_force(mass, wp, x[1])) * exp_v_oo
     f_o = (ring_springs_force(mass, wp, x_long)) * exp_v_o
     # Comulative Avg Force
-    f1 = (f_o[:beads] + f_oo_1) / z_exp
-    f2 = (f_o[beads:] + f_oo_2) / z_exp
-    f = np.concatenate((f1, f2))
+    f1 = (f_o[:beads] + f_oo_1)
+    f2 = (f_o[beads:] + f_oo_2)
+    f = np.concatenate((f1, f2)) / z_exp
     return f, z_exp, v_o, v_oo
-
 
 def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles):
     t = 0
@@ -170,7 +177,7 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_par
 
     x = initial_position(mass, w, hbar, N_particles, beads)
     vx = initial_velocity(mass, beta, N_particles, beads)
-    f_weighted, z_exp, v_o, v_oo = force_comulative(mass, wp, beta, beads, N_particles, x)
+    f_weighted, z_exp, v_o, v_oo = force_cumulative(mass, wp, beta, beads, N_particles, x)
     f_ext = oscillator_force(mass, w, x) / beads
     force = f_weighted + f_ext
     ethermo = 0.0
@@ -178,14 +185,15 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_par
         times[step] = t
         steps[step] = int(s)
         kin[step] = kinetic_1d(mass, vx)
-        potential[step] = - (1 / beta) * np.log(z_exp/2) + oscillator_potential(mass, w, x) / beads
+        potential[step] = v_oo - (1 / beta) * np.log((z_exp/2)) + oscillator_potential(mass, w, x) / beads
         e_tot[step] = kin[step] + potential[step]
         e_change[step] = abs((e_tot[step] - e_tot[0])) * 100 / e_tot[0]  # abs?
         h_eff[step] = e_tot[step] + ethermo
-        h_eff_change[step] = abs((h_eff[step] - h_eff[0]) * 100) / h_eff[0]
+        h_eff_change[step] = abs((h_eff[step] - h_eff[1000]) * 100) / h_eff[1000]
         temp_exp[step] = 2.0 * kin[step] / (kboltz * beads * N_particles)  # Divided by beads from the Equipartition Function
         pot_est[step] = oscillator_potential(mass, w, x) / beads
-        kin_est[step] = kinetic_estimator_virial2(beads, x, f_ext)
+        # kin_est[step] = kinetic_estimator_primitive(beads, beta, v_oo, v_o)
+        kin_est[step] = kinetic_estimator_virial2(beads, mass, w, x)
         t += dt
         s += 1
         # Histogram
@@ -193,15 +201,15 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_par
         # vel[step] = vx[0]
 
         # Time propagation
-        # vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads, N_particles)
-        # ethermo += kin1 - kin2
+        vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads, N_particles)
+        ethermo += kin1 - kin2
         vx = vx + 0.5 * dt * (force / mass)
         x = x + vx * dt
-        f_weighted, z_exp, v_o, v_oo = force_comulative(mass, wp, beta, beads, N_particles, x)
+        f_weighted, z_exp, v_o, v_oo = force_cumulative(mass, wp, beta, beads, N_particles, x)
         f_ext = oscillator_force(mass, w, x) / beads
         force = f_weighted + f_ext
         vx = vx + 0.5 * dt * (force / mass)
-        # vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads, N_particles)
-        # ethermo += kin1 - kin2
+        vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads, N_particles)
+        ethermo += kin1 - kin2
     return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change
 

@@ -3,7 +3,7 @@
 from MD_QHO_Functions_2bosons import *
 
 steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
-    langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, wp_long, beads)
+    langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles)
 
 
 # block_size_array = np.array([5000])
@@ -13,7 +13,7 @@ stdv_array = np.zeros(len(block_size_array))
 number_of_blocks_array = np.zeros(len(block_size_array))
 
 for i, value in enumerate(block_size_array):
-    number_of_blocks, avg, stdv = block_averaging(cutoff, block_size=value, data=pot_est)
+    number_of_blocks, avg, stdv = block_averaging(cutoff, block_size=value, data=temp_exp)
     avg_array[i] = avg
     stdv_array[i] = stdv
     number_of_blocks_array[i] = number_of_blocks
