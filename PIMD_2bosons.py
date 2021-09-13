@@ -50,7 +50,7 @@ for i, b in enumerate(beads_array):
 
 print ("e array:", e_tot_array)
 
-np.savez("2B_QHO_beta0.5_vs_beads_20K",  e_tot_array=e_tot_array, e_tot_stdv_array=e_tot_stdv_array, beads_array=beads_array)
+np.savez("2B_QHO_beta0.5_vs_beads_60K",  e_tot_array=e_tot_array, e_tot_stdv_array=e_tot_stdv_array, beads_array=beads_array)
 
 pass
 
@@ -119,30 +119,43 @@ plt.ylabel("Kinetic Estimator")
 plt.legend()
 plt.show()
 
-betas = np.array([ 1,  2,  3,  5, 10])
-e_tot_b = np.array([1.98825745, 1.23819174, 1.08257483, 1.01779556, 0.99359082])
-stdv_b = np.array([0.06531126, 0.03163414, 0.02059858, 0.01289163, 0.0084961 ])
 
-# figtotenergy = plt.figure()
-# plt.rcParams.update({'font.size': 13})
-# q = np.linspace(0.8, 11, 1000)
-# p = (hbar * w * (np.exp(q * hbar * w) + np.exp(2*q * hbar * w) + 2))/(np.exp(2 * q * hbar * w)-1)
-# plt.plot(q, p, 'g')
-# plt.plot(betas, e_tot_b, '.', label="Mean Total Energy", color="blue", linestyle='None')
-# plt.errorbar(betas, e_tot_b, yerr=stdv_b, ecolor="black", linestyle='None')
-# plt.xlabel("Beta")
-# plt.ylabel("Mean Total Energy")
-# plt.legend(loc='upper right')
-# plt.show()
 
-# figtotenergy = plt.figure()
-# plt.rcParams.update({'font.size': 13})
-# q = np.linspace(0.8, 11, 1000)
-# p = hbar * w * (1 + 2 / (np.exp(q * hbar * w) - 1))
-# plt.plot(q, p, 'g')
-# plt.plot(beta, e_tot_b, '.', label="Mean Total Energy", color="blue", linestyle='None')
-# plt.errorbar(beta, e_tot_b, yerr=stdv_b, ecolor="black", linestyle='None')
-# plt.xlabel("Beta")
-# plt.ylabel("Mean Total Energy")
-# plt.legend(loc='upper right')
-# plt.show()
+# betas = np.array([1,  2,  3,  5, 10])
+# e_tot_b = np.array([1.98825745, 1.23819174, 1.08257483, 1.01779556, 0.99359082])
+# stdv_b = np.array([0.11363226, 0.05506471, 0.03580274, 0.02237071, 0.01475264])
+
+# beta= 2 60K itr 1.190640207206084 +- 0.03331297434928319
+# beta = 2 20K itr 1.23819174 +- 0.05506471
+
+# beta = 0.5   20K itr  3.6827085325 +- 0.22941947274798993
+# beta = 0.5   60K itr 3.71512931 +- 0.12919464121210192
+betas = np.array([0.5, 1,  2,  3,  5, 10])
+e_tot_b = np.array([3.71512931, 1.98825745, 1.190640207206084, 1.08257483, 1.01779556, 0.99359082])
+stdv_b = np.array([0.12919464121210192, 0.11363226, 0.03331297434928319, 0.03580274, 0.02237071, 0.01475264])
+
+figtotenergy = plt.figure()
+plt.rcParams.update({'font.size': 13})
+q = np.linspace(0.3, 11, 1000)
+p = (hbar * w * (np.exp(q * hbar * w) + np.exp(2*q * hbar * w) + 2))/(np.exp(2 * q * hbar * w)-1)
+plt.plot(q, p, 'g',  label="Analytical Result")
+plt.plot(betas, e_tot_b, '.', label="Mean Total Energy", color="blue", linestyle='None')
+plt.errorbar(betas, e_tot_b, yerr=stdv_b, ecolor="black", linestyle='None')
+plt.xlabel("Beta")
+plt.ylabel("Mean Total Energy")
+plt.legend(loc='upper right')
+plt.show()
+
+
+# e05 =[3.51364408, 3.53553696, 3.74749349, 3.78348673, 3.42482214, 3.47558984, 3.70211219, 3.67790933, 3.65613724, 3.69467537]
+# e1 =[1.77756524, 1.88358542, 1.97333656, 2.02469105, 1.81690049, 2.05772718, 2.00220635, 1.96750464, 1.99506137]
+# e2 =[1.0917804,  1.17912541, 1.23402858, 1.251729, 1.14492413, 1.24778852, 1.24208449, 1.23004114, 1.2424496]
+# e3 = [0.91550385, 1.03109412, 1.07090572, 1.09091144, 1.01400037, 1.08825822, 1.07807176, 1.08580715, 1.08384558]
+# e5 = [0.74800101, 0.93259973, 0.99202508, 1.01461955, 0.96732838, 1.01736942, 1.0201008, 1.01360915, 1.01967671]
+# e10 = [0.49658288, 0.77110258, 0.90809851, 0.96781267, 0.94231154, 0.97672965, 1.00596272, 0.98165858, 0.99315118]
+# s05 = [0.04742002, 0.05975375, 0.07407656, 0.0766224, 0.08601928, 0.10037365, 0.1072404, 0.11472529, 0.1143131, 0.12207954]
+# s1 =[0.02245057, 0.03421171, 0.03982982, 0.04471548, 0.04997226, 0.0642453, 0.0592174, 0.06288521, 0.07383116]
+# s2 = [0.01046913, 0.01581804, 0.01978168, 0.02154474, 0.02222855, 0.03020612, 0.02983664, 0.02898888, 0.03607689]
+# s3 = [0.00710411, 0.01090228, 0.01325285, 0.01464614, 0.01512544, 0.02061812, 0.01927779, 0.01948213, 0.02303583]
+# s5 = [0.00500744, 0.00720508, 0.00929217, 0.0102218, 0.01001999, 0.01265714, 0.01269869, 0.0120366, 0.01393959]
+# s10 = [0.00331076, 0.00521686, 0.00655702, 0.00705895, 0.0067865, 0.00805114, 0.00880198, 0.00765436, 0.00903196]

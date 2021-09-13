@@ -10,7 +10,7 @@ N_particles = 2
 # beads = 20
 
 # Time
-T_max = 20000
+T_max = 60000
 dt = 1 * 10 ** (-2)
 g_steps = int(T_max / dt)
 print("Number of Steps:", g_steps)
