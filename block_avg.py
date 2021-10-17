@@ -1,9 +1,11 @@
 
 # from MD_QHO_Functions import *
 from MD_QHO_Functions_2bosons import *
+beads = 32
+wp = math.sqrt(beads) / (beta * hbar)
 
-steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
-    langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles)
+steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change, s_o_dinom, s_o_num = \
+    langevin_dynamics_fermion(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles)
 
 
 # block_size_array = np.array([5000])
@@ -13,7 +15,7 @@ stdv_array = np.zeros(len(block_size_array))
 number_of_blocks_array = np.zeros(len(block_size_array))
 
 for i, value in enumerate(block_size_array):
-    number_of_blocks, avg, stdv = block_averaging(cutoff, block_size=value, data=temp_exp)
+    number_of_blocks, avg, stdv = block_averaging(cutoff, block_size=value, data=s_o_dinom)
     avg_array[i] = avg
     stdv_array[i] = stdv
     number_of_blocks_array[i] = number_of_blocks
@@ -27,7 +29,7 @@ plt.legend()
 plt.show()
 
 
-np.savez("block_avg_pot_est", avg = avg_array, stdv = stdv_array, time=times, temp=temp_exp, pot=pot_est, kin=kin_est, heff=h_eff_change)
+np.savez("block_avg_s_o", avg=avg_array, stdv=stdv_array, time=times, temp=temp_exp, pot=pot_est, kin=kin_est, heff=h_eff_change)
 print("Average:", avg_array)
 print ("stdv:", stdv_array)
 

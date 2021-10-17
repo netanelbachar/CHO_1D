@@ -1,6 +1,7 @@
 from MD_QHO_Functions_2bosons import *
 
 
+
 # start = time.time()
 # steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
 #     langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles)
@@ -9,8 +10,8 @@ from MD_QHO_Functions_2bosons import *
 # print("Time of execution:", duration)
 #
 # number_of_blocks, avg_temp_exp, stdv_temp = block_averaging(cutoff, block_size=1000, data=temp_exp)
-# number_of_blocks1, avg_potential_est, stdv_potential = block_averaging(cutoff, block_size=3000, data=pot_est)
-# number_of_blocks2, avg_kin_est, stdv_kin = block_averaging(cutoff, block_size=3000, data=kin_est)
+# number_of_blocks1, avg_potential_est, stdv_potential = block_averaging(cutoff, block_size=1000, data=pot_est)
+# number_of_blocks2, avg_kin_est, stdv_kin = block_averaging(cutoff, block_size=1000, data=kin_est)
 #
 # print("Mean Temperature:", avg_temp_exp, "+-", stdv_temp)
 # print("Mean Potential_estimator:", avg_potential_est, "+-", stdv_potential)
@@ -21,10 +22,10 @@ from MD_QHO_Functions_2bosons import *
 #          avg_kin_est=avg_kin_est, stdv_kin=stdv_kin, stdv_potential=stdv_potential)
 
 
-beads_array = np.array([3, 5, 8, 10, 16, 20, 24, 28, 32, 36])
-# beads_array = np.array([3, 6, 10, 16, 20, 24, 28, 32, 36])
+beads_array = np.array([3, 5, 8, 10, 16, 24, 28, 32, 36])
 e_tot_array = np.zeros(len(beads_array))
 e_tot_stdv_array = np.zeros(len(beads_array))
+
 for i, b in enumerate(beads_array):
     wp = math.sqrt(b) / (beta * hbar)
 
@@ -49,20 +50,19 @@ for i, b in enumerate(beads_array):
     e_tot_stdv_array[i] = np.sqrt(stdv_potential ** 2 + stdv_kin ** 2)
 
 print ("e array:", e_tot_array)
-
-np.savez("2B_QHO_beta0.5_vs_beads_60K",  e_tot_array=e_tot_array, e_tot_stdv_array=e_tot_stdv_array, beads_array=beads_array)
+#
+# np.savez("2B_QHO_beta1_vs_beads_100K",  e_tot_array=e_tot_array, e_tot_stdv_array=e_tot_stdv_array, beads_array=beads_array)
 
 pass
 
-figtotenergy = plt.figure()
-plt.rcParams.update({'font.size': 13})
-plt.plot(beads_array, e_tot_array, '.', label="Mean Total Energy", color="blue")
-plt.errorbar(beads_array, e_tot_array, yerr=e_tot_stdv_array, ecolor="black")
-plt.xlabel("Beads")
-plt.ylabel("Mean Total Energy")
-plt.legend(loc='lower right')
-plt.show()
-
+# figtotenergy = plt.figure()
+# plt.rcParams.update({'font.size': 13})
+# plt.plot(beads_array, e_tot_array, '.', label="Mean Total Energy", color="blue")
+# plt.errorbar(beads_array, e_tot_array, yerr=e_tot_stdv_array, ecolor="black")
+# plt.xlabel("Beads")
+# plt.ylabel("Mean Total Energy")
+# plt.legend(loc='lower right')
+# plt.show()
 
 
 figenergy = plt.figure()
@@ -84,8 +84,6 @@ plt.ylim([-0.1, 0.1])
 plt.legend()
 plt.show()
 
-
-
 figtemp = plt.figure()
 plt.rcParams.update({'font.size': 13})
 plt.plot(times, temp_exp, '.', label="Temperature", color="red")
@@ -93,7 +91,7 @@ plt.xlabel("time")
 plt.ylabel("Temperature")
 plt.legend()
 plt.show()
-#
+
 figper = plt.figure()
 plt.rcParams.update({'font.size': 13})
 plt.plot(times, h_eff_change, '.', label="Effective Hamiltonian", color="red")
@@ -121,13 +119,15 @@ plt.show()
 
 
 
+ # Results
+
+
 # betas = np.array([1,  2,  3,  5, 10])
 # e_tot_b = np.array([1.98825745, 1.23819174, 1.08257483, 1.01779556, 0.99359082])
 # stdv_b = np.array([0.11363226, 0.05506471, 0.03580274, 0.02237071, 0.01475264])
 
 # beta= 2 60K itr 1.190640207206084 +- 0.03331297434928319
 # beta = 2 20K itr 1.23819174 +- 0.05506471
-
 # beta = 0.5   20K itr  3.6827085325 +- 0.22941947274798993
 # beta = 0.5   60K itr 3.71512931 +- 0.12919464121210192
 betas = np.array([0.5, 1,  2,  3,  5, 10])
@@ -159,3 +159,7 @@ plt.show()
 # s3 = [0.00710411, 0.01090228, 0.01325285, 0.01464614, 0.01512544, 0.02061812, 0.01927779, 0.01948213, 0.02303583]
 # s5 = [0.00500744, 0.00720508, 0.00929217, 0.0102218, 0.01001999, 0.01265714, 0.01269869, 0.0120366, 0.01393959]
 # s10 = [0.00331076, 0.00521686, 0.00655702, 0.00705895, 0.0067865, 0.00805114, 0.00880198, 0.00765436, 0.00903196]
+
+# beads_array = np.array([3, 5, 8, 10, 16, 24, 28, 32, 36])
+# e1 =[1.8833593120295147, 1.9245363730641891, 1.8838085992454328, 1.9019961437915973, 1.959432763979145, 1.9095407697127011, **2.00220635, **1.96750464, **1.99506137]
+# s1 =[0.011009353908803352, 0.013850426694430757, 0.015995631073664696, 0.017808787453056422, 0.022128074438208238,  0.024033140264882163, **0.0592174, **0.06288521, **0.07383116]
