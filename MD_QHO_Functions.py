@@ -6,8 +6,8 @@ import time
 mass, w, hbar, kboltz = 1, 1, 1, 1
 beta = 10
 # beta_array = np.array([1, 2, 3, 6, 8, 10])
-beads = 25
-beads_array = np.array([26, 28, 30, 32, 34, 36, 38, 40])
+beads = 2
+# beads_array = np.array([26, 28, 30, 32, 34, 36, 38, 40])
 # This evsbeta works
 # beads_array = np.array([20, 12, 10, 16, 20, 32])
 # Primitive and Virial
@@ -162,14 +162,14 @@ def langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, beads):
         vel[step] = vx[0]
 
         # Time propagation
-        vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
-        ethermo += kin1 - kin2
+        # vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
+        # ethermo += kin1 - kin2
         vx = vx + 0.5 * dt * (force / mass)
         x = x + vx * dt
         force = oscillator_force(mass, w, beads, x) + ring_springs_force(mass, wp, x)
         vx = vx + 0.5 * dt * (force / mass)
-        vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
-        ethermo += kin1 - kin2
+        # vx, kin1, kin2 = langevin(mass, beta, vx, dt, beads)
+        # ethermo += kin1 - kin2
     # pos = (pos1 + pos2 + pos3 + pos4 + pos5 + pos6 + pos7 + pos8) / 8
     return steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change
 
