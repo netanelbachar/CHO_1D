@@ -21,7 +21,7 @@ print("Mean classical Temperature:", avg_temp_exp, "+-", stdv_temp)
 print("Potential Estimator-Fermion:", observable, "+-", d_observable)
 print("Total Energy Estimator-Fermion:", 2 * observable, "+-", 2 * d_observable)  # times 2 since kin = pot
 
-np.savez("2F_QHO_ensemble_beta05", observable=2*observable, d_observable=2*d_observable)
+# np.savez("2F_QHO_ensemble_beta05", observable=2*observable, d_observable=2*d_observable)
 
 plt.figure(1)
 plt.rcParams.update({'font.size': 13})
@@ -140,7 +140,7 @@ pass
 
  # Results for fermions
 
-
+# beads_array = np.array([3, 4, 5, 6, 8, 10])
 # betas = np.array([0.3, 0.5, 0.8, 1,  2,  3,  5, 10])
 # e_tot_f = np.array([7.3768407, 4.758762338333333, 3.350115618333333, 2.8454311433333337, 2.189582618333333, 2.0275577000000005, 1.5472921679999998, 1.1172278766666668])
 # stdv_f = np.array([0.16043649166666665, 0.12524463500000002, 0.11092883333333332, 0.16780319000000002, 0.26941090333333334, 0.6055924033333333, 1.557349254, 2.0800425866666665])

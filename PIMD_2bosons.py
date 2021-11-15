@@ -4,7 +4,7 @@ from MD_QHO_Functions_2bosons import *
 
 # start = time.time()
 # steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
-#     langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles)
+#     langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, g, si, beads, N_particles)
 # stop = time.time()
 # duration = stop - start
 # print("Time of execution:", duration)
@@ -13,25 +13,29 @@ from MD_QHO_Functions_2bosons import *
 # number_of_blocks1, avg_potential_est, stdv_potential = block_averaging(cutoff, block_size=1000, data=pot_est)
 # number_of_blocks2, avg_kin_est, stdv_kin = block_averaging(cutoff, block_size=1000, data=kin_est)
 #
+# # number_of_blocks, avg_etot, stdv_etot = block_averaging(cutoff, block_size=1000, data=e_tot)
+# # number_of_blocks1, avg_potential_est, stdv_potential = block_averaging(cutoff, block_size=1000, data=potential)
+# # number_of_blocks2, avg_kin_est, stdv_kin = block_averaging(cutoff, block_size=1000, data=kin)
+#
+# print("Mean Kinetic Estimator:", avg_kin_est, "+-", stdv_kin)
+# print("Mean Potential Estimator:", avg_potential_est, "+-", stdv_potential)
 # print("Mean Temperature:", avg_temp_exp, "+-", stdv_temp)
-# print("Mean Potential_estimator:", avg_potential_est, "+-", stdv_potential)
-# print("Mean Kinetic_estimator:", avg_kin_est, "+-", stdv_kin)
-# print("Mean Total Energy Estimator:", avg_potential_est + avg_kin_est, "+-", np.sqrt(stdv_potential**2 + stdv_kin**2))
+# print("Mean Total Energy Estimator :", avg_potential_est + avg_kin_est, "+-", np.sqrt(stdv_potential**2 + stdv_kin**2))
 #
 # np.savez("2B_QHO_beta10.1", avg_potential_est=avg_potential_est,
 #          avg_kin_est=avg_kin_est, stdv_kin=stdv_kin, stdv_potential=stdv_potential)
 
 
-beads_array = np.array([3, 5, 8, 10, 16, 24, 28, 32, 36])
+beads_array = np.array([3, 8, 16, 24, 28, 32])
+
 e_tot_array = np.zeros(len(beads_array))
 e_tot_stdv_array = np.zeros(len(beads_array))
 
 for i, b in enumerate(beads_array):
     wp = math.sqrt(b) / (beta * hbar)
-
     start = time.time()
     steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change = \
-        langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, b, N_particles)
+        langevin_dynamics(g_steps, dt, mass, beta, hbar, kboltz, w, wp, g, si, b, N_particles)
     stop = time.time()
     duration = stop - start
     print("Time of execution:", duration)
@@ -49,44 +53,44 @@ for i, b in enumerate(beads_array):
     e_tot_array[i] = avg_potential_est + avg_kin_est
     e_tot_stdv_array[i] = np.sqrt(stdv_potential ** 2 + stdv_kin ** 2)
 
-print ("e array:", e_tot_array)
-#
-# np.savez("2B_QHO_beta1_vs_beads_100K",  e_tot_array=e_tot_array, e_tot_stdv_array=e_tot_stdv_array, beads_array=beads_array)
+print("e array:", e_tot_array)
+
+np.savez("2B_QHO_C_beta10_vs_beads_20K",  e_tot_array=e_tot_array, e_tot_stdv_array=e_tot_stdv_array, beads_array=beads_array)
 
 pass
 
-# figtotenergy = plt.figure()
+figtotenergy = plt.figure()
+plt.rcParams.update({'font.size': 13})
+plt.plot(beads_array, e_tot_array, '.', label="Mean Total Energy", color="blue")
+plt.errorbar(beads_array, e_tot_array, yerr=e_tot_stdv_array, ecolor="black")
+plt.xlabel("Beads")
+plt.ylabel("Mean Total Energy")
+plt.legend(loc='lower right')
+plt.show()
+
+numb = int(g_steps*0.3)*0
+# figenergy = plt.figure()
 # plt.rcParams.update({'font.size': 13})
-# plt.plot(beads_array, e_tot_array, '.', label="Mean Total Energy", color="blue")
-# plt.errorbar(beads_array, e_tot_array, yerr=e_tot_stdv_array, ecolor="black")
-# plt.xlabel("Beads")
-# plt.ylabel("Mean Total Energy")
-# plt.legend(loc='lower right')
+# plt.plot(times[numb:], e_tot[numb:], '.', label="Total Energy vs Time", color="black")
+# plt.plot(times[numb:], kin[numb:], '.', label="Kinetic vs Time", color="red")
+# plt.plot(times[numb:], potential[numb:], '.', label="Potential vs Time", color="blue")
+# plt.xlabel("time")
+# plt.ylabel("Energy")
+# plt.legend()
 # plt.show()
-
-
-figenergy = plt.figure()
-plt.rcParams.update({'font.size': 13})
-plt.plot(times, e_tot, '.', label="Total Energy vs Time", color="black")
-plt.plot(times, kin, '.', label="Kinetic vs Time", color="red")
-plt.plot(times, potential, '.', label="Potential vs Time", color="blue")
-plt.xlabel("time")
-plt.ylabel("Energy")
-plt.legend()
-plt.show()
-
-figper = plt.figure()
-plt.rcParams.update({'font.size': 13})
-plt.plot(times, e_change, '.', label="Energy % Change", color="red")
-plt.xlabel("time")
-plt.ylabel("(E(t) - E0)*100 / E0  [%]")
-plt.ylim([-0.1, 0.1])
-plt.legend()
-plt.show()
+#
+# figper = plt.figure()
+# plt.rcParams.update({'font.size': 13})
+# plt.plot(times[numb:], e_change[numb:], '.', label="Energy % Change", color="red")
+# plt.xlabel("time")
+# plt.ylabel("(E(t) - E0)*100 / E0  [%]")
+# # plt.ylim([-0.1, 0.1])
+# plt.legend()
+# plt.show()
 
 figtemp = plt.figure()
 plt.rcParams.update({'font.size': 13})
-plt.plot(times, temp_exp, '.', label="Temperature", color="red")
+plt.plot(times[numb:], temp_exp[numb:], '.', label="Temperature", color="red")
 plt.xlabel("time")
 plt.ylabel("Temperature")
 plt.legend()
@@ -94,24 +98,24 @@ plt.show()
 
 figper = plt.figure()
 plt.rcParams.update({'font.size': 13})
-plt.plot(times, h_eff_change, '.', label="Effective Hamiltonian", color="red")
+plt.plot(times[numb:], h_eff_change[numb:], '.', label="Effective Hamiltonian", color="red")
 plt.xlabel("time")
 plt.ylabel("(H_eff(t) - H_eff(0))*100 / H_eff(0) [%]")
-plt.ylim([-0.1, 0.1])
+# plt.ylim([-0.1, 0.1])
 plt.legend()
 plt.show()
 
 figpotest = plt.figure()
 plt.rcParams.update({'font.size': 13})
-plt.plot(steps, pot_est, '.', label="P_Estimator vs step", color="blue")
+plt.plot(steps[numb:], pot_est[numb:], '.', label="P_Estimator vs step", color="blue")
 plt.xlabel("Steps")
 plt.ylabel("Potential Estimator")
 plt.legend()
 plt.show()
-
+#
 figkinest = plt.figure()
 plt.rcParams.update({'font.size': 13})
-plt.plot(steps, kin_est, '.', label="K_Estimator vs step", color="blue")
+plt.plot(steps[numb:], kin_est[numb:], '.', label="K_Estimator vs step", color="blue")
 plt.xlabel("Steps")
 plt.ylabel("Kinetic Estimator")
 plt.legend()
@@ -134,17 +138,17 @@ betas = np.array([0.5, 1,  2,  3,  5, 10])
 e_tot_b = np.array([3.71512931, 1.98825745, 1.190640207206084, 1.08257483, 1.01779556, 0.99359082])
 stdv_b = np.array([0.12919464121210192, 0.11363226, 0.03331297434928319, 0.03580274, 0.02237071, 0.01475264])
 
-figtotenergy = plt.figure()
-plt.rcParams.update({'font.size': 13})
-q = np.linspace(0.3, 11, 1000)
-p = (hbar * w * (np.exp(q * hbar * w) + np.exp(2*q * hbar * w) + 2))/(np.exp(2 * q * hbar * w)-1)
-plt.plot(q, p, 'g',  label="Analytical Result")
-plt.plot(betas, e_tot_b, '.', label="Mean Total Energy", color="blue", linestyle='None')
-plt.errorbar(betas, e_tot_b, yerr=stdv_b, ecolor="black", linestyle='None')
-plt.xlabel("Beta")
-plt.ylabel("Mean Total Energy")
-plt.legend(loc='upper right')
-plt.show()
+# figtotenergy = plt.figure()
+# plt.rcParams.update({'font.size': 13})
+# q = np.linspace(0.3, 11, 1000)
+# p = (hbar * w * (np.exp(q * hbar * w) + np.exp(2*q * hbar * w) + 2))/(np.exp(2 * q * hbar * w)-1)
+# plt.plot(q, p, 'g',  label="Analytical Result")
+# plt.plot(betas, e_tot_b, '.', label="Mean Total Energy", color="blue", linestyle='None')
+# plt.errorbar(betas, e_tot_b, yerr=stdv_b, ecolor="black", linestyle='None')
+# plt.xlabel("Beta")
+# plt.ylabel("Mean Total Energy")
+# plt.legend(loc='upper right')
+# plt.show()
 
 
 # e05 =[3.51364408, 3.53553696, 3.74749349, 3.78348673, 3.42482214, 3.47558984, 3.70211219, 3.67790933, 3.65613724, 3.69467537]

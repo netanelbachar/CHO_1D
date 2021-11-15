@@ -4,8 +4,8 @@ from MD_QHO_Functions_2bosons import *
 beads = 32
 wp = math.sqrt(beads) / (beta * hbar)
 
-steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change, s_o_dinom, s_o_num = \
-    langevin_dynamics_fermion(g_steps, dt, mass, beta, hbar, kboltz, w, wp, beads, N_particles)
+steps, times, pos, vel, kin, potential, e_tot, e_change, temp_exp, pot_est, kin_est, h_eff_change, s_o_dinom, s_o_num, hminush = \
+    langevin_dynamics_fermion_gaus(g_steps, dt, mass, beta, hbar, kboltz, w, wp, g, si, beads, N_particles)
 
 
 # block_size_array = np.array([5000])
@@ -15,7 +15,7 @@ stdv_array = np.zeros(len(block_size_array))
 number_of_blocks_array = np.zeros(len(block_size_array))
 
 for i, value in enumerate(block_size_array):
-    number_of_blocks, avg, stdv = block_averaging(cutoff, block_size=value, data=s_o_dinom)
+    number_of_blocks, avg, stdv = block_averaging(cutoff, block_size=value, data=pot_est)
     avg_array[i] = avg
     stdv_array[i] = stdv
     number_of_blocks_array[i] = number_of_blocks
